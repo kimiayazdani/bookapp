@@ -7,7 +7,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django_plus.api import UrlParam as _p
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -17,19 +16,28 @@ from book_advertisement.serializers.ad_serializers import (
     BookAdUpdateSerializer,
     BookAdListSerializer
 )
+from rest_framework import permissions
 
 logger = logging.getLogger(__name__)
 
 
+class ListFreePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if view.action == 'list':  # create new user by anyone
+            return True
+        return bool(request.user and request.user.is_authenticated)
+
+
 class BookAdvertiseView(ModelViewSet):
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (ListFreePermission,)
     filter_backends = (DjangoFilterBackend,)
     list_params_template = [
         _p('start', _p.datetime, default=datetime.now() - timedelta(days=90)),
         _p('end', _p.datetime, default=datetime.now()),
         _p('ad_type', _p.list(separator=',', item_cleaner=_p.string)),
-        _p('price', _p.list(separator=',', item_cleaner=_p.int))
+        _p('min_price', _p.int),
+        _p('max_price', _p.int)
     ]
 
     def get_serializer_class(self):
@@ -63,7 +71,8 @@ class BookAdvertiseView(ModelViewSet):
             start = params['start']
             end = params['end']
             ad_types = params['ad_type']
-            price = params['price']
+            min_price = params['min_price']
+            max_price = params['max_price']
             validation_kinds = self.validate_kinds(ad_types)
             if start > end:
                 raise ValidationError('start datetime should be before end datetime')
@@ -74,8 +83,10 @@ class BookAdvertiseView(ModelViewSet):
             )
             if ad_types:
                 _query = _query.filter(kind__in=ad_types)
-            if price:
-                _query = _query.filter(price__lte=price)
+            if max_price:
+                _query = _query.filter(price__lte=max_price)
+            if min_price:
+                _query = _query.filter(price__gte=min_price)
             _query = _query.values(
                 'id', 'ad_type', 'title', 'price', 'description', 'author__username', 'poster'
             )
@@ -83,7 +94,6 @@ class BookAdvertiseView(ModelViewSet):
         elif self.request.method == 'PATCH':
             _query = BookAd.objects.all()
         _query = self.slice_queryset(_query)
-
         return _query
 
     @staticmethod
@@ -108,20 +118,8 @@ class BookAdvertiseView(ModelViewSet):
             book_ad = BookAd.objects.get(id=pk)
         except BookAd.DoesNotExist:
             return Response(data={'object with id:{} does not exist'.format(pk)}, status=status.HTTP_404_NOT_FOUND)
-        if book_ad.pet_image:
-            image_src = str(book_ad.poster) + settings.MEDIA_URL
-        else:
-            image_src = None
-        data = {
-            'id': pk,
-            'title': book_ad.title,
-            'start': book_ad.description,
-            'created': book_ad.created,
-            'price': book_ad.price,
-            'author': book_ad.author.id,
-            'pet_image': image_src,
-            'ad_type': book_ad.ad_type
-        }
+        serializer = BookAdSerializer(book_ad)
+        data = serializer.data
         return Response(data=data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):

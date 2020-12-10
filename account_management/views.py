@@ -5,7 +5,12 @@ from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from .serializers import RegistrationSerializer, ChangePasswordSerializer, AccountPropertiesSerializer
+from .serializers import (
+    RegistrationSerializer,
+    ChangePasswordSerializer,
+    AccountPropertiesSerializer,
+    AccountUpdateSerializer
+)
 from account_management.models import Account
 from rest_framework import status
 from rest_framework.response import Response
@@ -33,20 +38,20 @@ class Logout(APIView):
 @authentication_classes([])
 def registration_view(request):
     data = {}
-    email = request.data.get('user', '0').lower()
+    email = request.data.get('email', '0').lower()
 
     if validate_email(email) is not None:
         data['error_message'] = 'That email is already in use.'
         data['response'] = 'Error'
         return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
 
-    username = request.data.get('name', '0')
+    username = request.data.get('username', '0')
     if validate_username(username) is not None:
         data['error_message'] = 'That username is already in use.'
         data['response'] = 'Error'
         return Response(data=data, status=status.HTTP_403_FORBIDDEN)
 
-    password = request.data.get('pass', '0')
+    password = request.data.get('password', '0')
     val = validate_password(password)
     if val[0] is None:
         data['error_message'] = val[1]
@@ -152,7 +157,7 @@ def update_account_view(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'PUT':
-        serializer = AccountPropertiesSerializer(account, data=request.data)
+        serializer = AccountUpdateSerializer(account, data=request.data)
         data = {}
         if serializer.is_valid():
             serializer.save()
@@ -167,8 +172,8 @@ class Login(APIView):
 
     def post(self, request):
         context = {}
-        email = request.data.get('user')
-        password = request.data.get('pass')
+        email = request.data.get('username')
+        password = request.data.get('password')
         account = authenticate(email=email, password=password)
         if account:
             context['response'] = 'Successfully authenticated.'
@@ -176,10 +181,9 @@ class Login(APIView):
             context['email'] = email.lower()
             context['image'] = str(account.avatar)
             context['token'] = str(Token.objects.get_or_create(user=account)[0])
-            context['logged_in'] = 1
             return Response(data=context, status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_403_FORBIDDEN, data={'error': 'user did not find', 'logged_in': 0})
+            return Response(status=status.HTTP_403_FORBIDDEN, data={'error': 'user did not find'})
 
 
 @api_view(['GET', ])

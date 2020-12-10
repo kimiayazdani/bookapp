@@ -7,12 +7,21 @@ from account_management.models import Account
 from book_advertisement.models import BookAd
 
 
+class NestedAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = (
+            'id',
+            'username',
+        )
+
+
 class BookAdSerializer(serializers.ModelSerializer):
     """
     this serializer used for POST request
     """
     ad_type = serializers.CharField(default=BookAd.SALE)
-    author = serializers.IntegerField(write_only=True, required=False)
+    author = NestedAccountSerializer(allow_null=True, required=False)
 
     class Meta:
         model = BookAd
@@ -28,6 +37,15 @@ class BookAdSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         id = self.get_user_id()
         attrs['author'] = Account.objects.get(id=id)
+        ad_type = attrs['ad_type']
+        poster = attrs['poster']
+        if ad_type == BookAd.BUY and poster:
+            raise serializers.ValidationError(
+                {
+                    'ad_type':
+                        'پست خرید نمی‌تواند عکس داشته باشد.'
+                }
+            )
         return attrs
 
     def create(self, validated_data):
@@ -66,7 +84,6 @@ class BookAdListSerializer(serializers.ModelSerializer):
     """
         this serializer used for GET request with action:list
     """
-    tags = serializers.ListField()
     author__username = serializers.CharField(write_only=True, required=False)
 
     class Meta:

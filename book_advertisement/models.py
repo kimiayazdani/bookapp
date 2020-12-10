@@ -2,8 +2,10 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from account_management.models import Account
+from _helpers.db import TimeModel
 
-class BookAd(models.Model):
+
+class BookAd(TimeModel):
     SALE = 'sale'
     BUY = 'buy'
 
@@ -27,7 +29,7 @@ class BookAd(models.Model):
         return reverse('ad', kwargs={'pk': self.pk})
 
     def clean(self):
-        if self.poster and not self.sell:
+        if self.poster and self.ad_type == self.BUY:
             raise ValidationError("posters are not allowed for buy advertisements")
 
     def save(self, *args, **kwargs):
