@@ -24,10 +24,11 @@ class AccountPropertiesSerializer(serializers.ModelSerializer):
 
 
 class AccountUpdateSerializer(serializers.ModelSerializer):
+    phone_number = serializers.CharField(required=False)
     class Meta:
         model = Account
-        fields = ['pk', 'avatar']
-        readonly_fields = ['pk']
+        fields = ['pk', 'avatar', 'phone_number']
+        read_only_fields = ['pk']
 
 
 class ChangePasswordSerializer(serializers.Serializer):

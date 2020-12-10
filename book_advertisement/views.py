@@ -1,12 +1,11 @@
 import logging
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from django_plus.api import UrlParam as _p
 from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -29,7 +28,7 @@ class ListFreePermission(permissions.BasePermission):
 
 
 class BookAdvertiseView(ModelViewSet):
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (ListFreePermission,)
     filter_backends = (DjangoFilterBackend,)
     list_params_template = [

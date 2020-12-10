@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import UpdateAPIView
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .serializers import (
     RegistrationSerializer,
     ChangePasswordSerializer,
@@ -18,7 +18,7 @@ from django.contrib.auth import logout
 
 
 class Logout(APIView):
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, format=None):
@@ -70,12 +70,13 @@ def registration_view(request):
         account.save()
         ser = RegistrationSerializer(account)
         data = ser.data
-        token = Token.objects.create(user=account)
+        token = RefreshToken.for_user(user=account)
         data['userId'] = account.pk
         data['profilePicture'] = account.avatar.url
         data['email'] = account.email
         data['username'] = account.username
-        data['token'] = str(token)
+        data['refresh_token'] = str(token)
+        data['access_token'] = str(token.access_token)
 
         return Response(data=data, status=status.HTTP_200_OK)
     else:
@@ -136,6 +137,7 @@ def validate_password(passwd):
 
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
+@authentication_classes((JWTAuthentication,))
 def account_properties_view(request):
     try:
         account = request.user
@@ -149,7 +151,7 @@ def account_properties_view(request):
 
 @api_view(['PUT', ])
 @permission_classes((IsAuthenticated,))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((JWTAuthentication,))
 def update_account_view(request):
     try:
         account = request.user
@@ -180,7 +182,9 @@ class Login(APIView):
             context['pk'] = account.pk
             context['email'] = email.lower()
             context['image'] = str(account.avatar)
-            context['token'] = str(Token.objects.get_or_create(user=account)[0])
+            token = RefreshToken.for_user(user=account)
+            context['refresh_token'] = str(token)
+            context['access_token'] = str(token.access_token)
             return Response(data=context, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN, data={'error': 'user did not find'})
@@ -188,7 +192,7 @@ class Login(APIView):
 
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
-@authentication_classes([TokenAuthentication, ])
+@authentication_classes([JWTAuthentication, ])
 def does_account_exist_view(request):
     if request.method == 'GET':
         email = request.GET['email'].lower()
@@ -203,11 +207,10 @@ def does_account_exist_view(request):
 
 
 class ChangePasswordView(UpdateAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
     model = Account
-    permission_classes = (IsAuthenticated,)
-
-    authentication_classes = (TokenAuthentication,)
 
     def get_object(self, queryset=None):
         obj = self.request.user
