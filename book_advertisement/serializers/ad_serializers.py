@@ -22,6 +22,7 @@ class BookAdSerializer(serializers.ModelSerializer):
     """
     ad_type = serializers.CharField(default=BookAd.SALE)
     author = NestedAccountSerializer(allow_null=True, required=False)
+    poster = serializers.ImageField(required=False)
 
     class Meta:
         model = BookAd
@@ -38,7 +39,7 @@ class BookAdSerializer(serializers.ModelSerializer):
         id = self.get_user_id()
         attrs['author'] = Account.objects.get(id=id)
         ad_type = attrs['ad_type']
-        poster = attrs['poster']
+        poster = attrs.get('poster', None)
         if ad_type == BookAd.BUY and poster:
             raise serializers.ValidationError(
                 {
