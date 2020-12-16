@@ -18,7 +18,6 @@ class Logout(APIView):
 
     def post(self, request, format=None):
         try:
-            request.user.auth_token.delete()
             logout(request)
             data = {'Response': 'successful'}
             p_status = status.HTTP_200_OK
