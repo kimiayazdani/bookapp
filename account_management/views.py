@@ -187,7 +187,11 @@ class Login(APIView):
             context['access_token'] = str(token.access_token)
             return Response(data=context, status=status.HTTP_200_OK)
         else:
+<<<<<<< Updated upstream
             return Response(status=status.HTTP_403_FORBIDDEN, data={'error': 'user did not find'})
+=======
+            return Response(status=status.HTTP_403_FORBIDDEN, data={'message': 'نام کاربری یا رمز عبور اشتباه است', 'logged_in': 0})
+>>>>>>> Stashed changes
 
 
 @api_view(['GET', ])
