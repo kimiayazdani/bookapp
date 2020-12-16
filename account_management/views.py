@@ -41,22 +41,29 @@ def registration_view(request):
     email = request.data.get('email', '0').lower()
 
     if validate_email(email) is not None:
-        data['error_message'] = 'That email is already in use.'
+        data['message'] = 'این ایمیل قبلا استفاده شده است.'
         data['response'] = 'Error'
         return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
 
     username = request.data.get('username', '0')
     if validate_username(username) is not None:
-        data['error_message'] = 'That username is already in use.'
+        data['message'] = 'نام‌کاربری پیش از شما توسط دیگران استفاده شده است.'
         data['response'] = 'Error'
         return Response(data=data, status=status.HTTP_403_FORBIDDEN)
 
     password = request.data.get('password', '0')
     val = validate_password(password)
     if val[0] is None:
-        data['error_message'] = val[1]
+        data['message'] = val[1]
         data['response'] = 'Error'
         return Response(data, status=status.HTTP_403_FORBIDDEN)
+    phone_number = request.data.get('number', '0')
+    val = validate_phone_number(phone_number)
+    if val:
+        data['message'] = val
+        data['response'] = 'Error'
+        return Response(data, status=status.HTTP_403_FORBIDDEN)
+
     data = {
         'password': password,
         'email': email,
@@ -85,6 +92,11 @@ def registration_view(request):
         return Response(data=data, status=status.HTTP_403_FORBIDDEN)
 
 
+def validate_phone_number(phone_number):
+    if len(phone_number) != 11:
+        return 'شماره تماس اشتباه است.'
+    return None
+
 def validate_email(email):
     try:
         account = Account.objects.get(email=email)
@@ -109,28 +121,28 @@ def validate_password(passwd):
 
     if len(passwd) < 6:
         val[0] = None
-        val[1] = 'password is too short!'
+        val[1] = 'رمز عبور کوتاه است!'
         return val
     if len(passwd) > 40:
         val[0] = None
-        val[1] = 'Password is too long!!'
+        val[1] = 'رمز عبور خیلی بزرگ است!'
         return val
     if not any(char.isdigit() for char in passwd):
         val[0] = None
-        val[1] = 'your password must contain at least one digit.'
+        val[1] = 'رمزعبور باید حداقل یک عدد داشته باشد.'
         return val
     if not any(char.isupper() for char in passwd):
         val[0] = None
-        val[1] = 'your password must contain at least one uppercase alphabet.'
+        val[1] = 'رمزعبور شما باید حداقل یک حرف بزرگ داشته باشد.'
         return val
     if not any(char.islower() for char in passwd):
         val[0] = None
-        val[1] = 'your password must contain at least one lowercase alphabet.'
+        val[1] = 'رمزعبور شما باید حداقل یک حرف کوچک داشته باشد.'
         return val
 
     if any(char in SpecialSym for char in passwd):
         val[0] = None
-        val[1] = 'your passwrod shouldn\'t contain any of {@,#,%,$ } set'
+        val[1] = 'رمز عبور نباید کاراکتر های {@,#,%,$ } را داشته باشد.'
         return val
     return val
 
@@ -187,11 +199,7 @@ class Login(APIView):
             context['access_token'] = str(token.access_token)
             return Response(data=context, status=status.HTTP_200_OK)
         else:
-<<<<<<< Updated upstream
-            return Response(status=status.HTTP_403_FORBIDDEN, data={'error': 'user did not find'})
-=======
-            return Response(status=status.HTTP_403_FORBIDDEN, data={'message': 'نام کاربری یا رمز عبور اشتباه است', 'logged_in': 0})
->>>>>>> Stashed changes
+            return Response(status=status.HTTP_403_FORBIDDEN, data={'message': 'نام کاربری یا رمز عبور اشتباه است'})
 
 
 @api_view(['GET', ])
