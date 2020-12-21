@@ -43,8 +43,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
+    # apps
+    
     'account_management',
-    'corsheaders'
+    'book_advertisement'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -151,7 +154,7 @@ AUTH_USER_MODEL = 'account_management.Account'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',  # <-- And here
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
 

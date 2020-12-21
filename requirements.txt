@@ -42,6 +42,7 @@ django-js-reverse==0.8.2
 django-model-utils==3.1.2
 django-multiselectfield==0.1.8
 django-redis==4.12.1
+djangorestframework-simplejwt==4.3.0
 drf-yasg==1.17.1
 django-simple-history==2.7.2
 -e git+https://github.com/altostratous/django-simple-history-field-track.git@dacaaedd212e57f17c9152d7dcbcb2e68c676c59#egg=django_simple_history_field_track
