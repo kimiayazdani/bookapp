@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Account
 from django.contrib.auth.hashers import make_password
+from django.core.files import File
+import base64
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -17,18 +19,34 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
 class AccountPropertiesSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = Account
-        fields = ['pk', 'avatar', 'email', 'is_staff', 'is_active', 'bio', 'phone_number']
+        fields = ['pk', 'avatar', 'email', 'is_staff', 'bio', 'phone_number', 'username', 'name',]
+
+    def get_avatar(self, obj):
+        f = open(obj.avatar.path, 'rb')
+        image = File(f)
+        data = base64.b64encode(image.read())
+        return data
 
 
 class AccountUpdateSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(required=False)
+
     class Meta:
         model = Account
-        fields = ['pk', 'avatar', 'phone_number']
+        fields = ['pk', 'phone_number', 'bio', 'name', 'username', 'password', 'avatar']
         read_only_fields = ['pk']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def update(self, instance, validated_data):
+        if validated_data.get('password', None):
+            validated_data['password'] = make_password(validated_data['password'])
+        return super(AccountUpdateSerializer, self).update(instance, validated_data)
 
 
 class ChangePasswordSerializer(serializers.Serializer):

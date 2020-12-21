@@ -161,17 +161,18 @@ def account_properties_view(request):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['PUT', ])
+@api_view(['PATCH', ])
 @permission_classes((IsAuthenticated,))
 @authentication_classes((JWTAuthentication,))
 def update_account_view(request):
     try:
         account = request.user
+        print(account)
     except Account.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'PUT':
-        serializer = AccountUpdateSerializer(account, data=request.data)
+    if request.method == 'PATCH':
+        serializer = AccountUpdateSerializer(account, data=request.data, partial=True)
         data = {}
         if serializer.is_valid():
             serializer.save()

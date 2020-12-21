@@ -36,6 +36,7 @@ class MyAccountManager(BaseUserManager):
 class Account(AbstractBaseUser, TimeModel):
     history = HistoricalRecords()
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
+    name = models.CharField(max_length=30)
     username = models.CharField(max_length=30, unique=True)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
