@@ -90,7 +90,7 @@ class BookAdvertiseView(ModelViewSet):
             if min_price:
                 _query = _query.filter(price__gte=min_price)
             _query = _query.values(
-                'id', 'ad_type', 'title', 'price', 'description', 'author__username', 'poster'
+                'id', 'ad_type', 'title', 'price', 'description', 'author__username', 'poster', 'authorName'
             )
 
         elif self.request.method == 'PATCH':

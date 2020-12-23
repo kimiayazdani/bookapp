@@ -31,7 +31,7 @@ class BookAdSerializerPost(serializers.ModelSerializer):
         model = BookAd
         fields = [
             'id', 'ad_type', 'title', 'description', 'author',
-            'poster', 'price'
+            'poster', 'price', 'authorName'
         ]
         read_only_fields = ('id',)
 
@@ -78,7 +78,7 @@ class BookAdSerializer(serializers.ModelSerializer):
         model = BookAd
         fields = [
             'id', 'ad_type', 'title', 'description', 'author',
-            'poster', 'price'
+            'poster', 'price', 'authorName'
         ]
         read_only_fields = ('id',)
 
@@ -98,6 +98,7 @@ class BookAdUpdateSerializer(serializers.ModelSerializer):
     """
         this serializer used for PATCH request
     """
+    poster = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = BookAd
@@ -107,9 +108,19 @@ class BookAdUpdateSerializer(serializers.ModelSerializer):
             'description',
             'ad_type',
             'poster',
-            'price'
+            'price',
+            'authorName'
         )
         writable_fields = ('title', 'description', 'tags', 'tags_image', 'kind')
+
+    def get_poster(self, obj):
+        if obj.poster is None:
+            return None
+
+        f = open(obj.poster.path, 'rb')
+        image = File(f)
+        data = base64.b64encode(image.read())
+        return data
 
     def update(self, instance: BookAd, validated_data):
         with transaction.atomic():
@@ -135,7 +146,8 @@ class BookAdListSerializer(serializers.ModelSerializer):
             'author__username',
             'poster',
             'price',
-            'ad_type'
+            'ad_type',
+            'authorName'
         )
         fields = context_fields
         read_only_fields = context_fields

@@ -21,6 +21,7 @@ class BookAd(TimeModel):
     description = models.TextField(verbose_name="توضیحات", max_length=500)
     ad_type = models.CharField(verbose_name="نوع درخواست", default=SALE, db_index=True, max_length=20)
     price = models.IntegerField(verbose_name="قیمت", default=20000)
+    authorName = models.CharField(verbose_name='نام نویسنده', default='بی‌نام', max_length=30)
 
     def __str__(self):
         return self.title
