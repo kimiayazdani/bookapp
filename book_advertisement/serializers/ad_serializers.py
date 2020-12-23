@@ -72,7 +72,7 @@ class BookAdSerializerPost(serializers.ModelSerializer):
 class BookAdSerializer(serializers.ModelSerializer):
     ad_type = serializers.CharField(default=BookAd.SALE)
     author = NestedAccountSerializer(allow_null=True, required=False)
-    poster = serializers.SerializerMethodField(required=False)
+    poster = serializers.SerializerMethodField(required=False, allow_null=True)
 
     class Meta:
         model = BookAd
@@ -86,7 +86,7 @@ class BookAdSerializer(serializers.ModelSerializer):
         return self.context['user_id']
 
     def get_poster(self, obj):
-        if obj.poster is None:
+        if obj.poster == "":
             return ""
         f = open(obj.poster.path, 'rb')
         image = File(f)
