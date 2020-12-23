@@ -10,22 +10,22 @@ import base64
 import os
 from django.conf import settings
 
+
 class NestedAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = (
             'id',
             'username',
+            'phone_number',
+            'email'
         )
 
 
-class BookAdSerializer(serializers.ModelSerializer):
-    """
-    this serializer used for POST request
-    """
+class BookAdSerializerPost(serializers.ModelSerializer):
     ad_type = serializers.CharField(default=BookAd.SALE)
     author = NestedAccountSerializer(allow_null=True, required=False)
-    poster = serializers.ImageField(required=False)
+    poster = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = BookAd
@@ -38,11 +38,22 @@ class BookAdSerializer(serializers.ModelSerializer):
     def get_user_id(self):
         return self.context['user_id']
 
+    def get_poster(self, obj):
+        if obj.poster is None:
+            return None
+
+        f = open(obj.poster.path, 'rb')
+        image = File(f)
+        data = base64.b64encode(image.read())
+        return data
+
     def validate(self, attrs):
         id = self.get_user_id()
         attrs['author'] = Account.objects.get(id=id)
         ad_type = attrs['ad_type']
         poster = attrs.get('poster', None)
+        if poster is None:
+            attrs.pop('poster')
         if ad_type == BookAd.BUY and poster:
             raise serializers.ValidationError(
                 {
@@ -56,6 +67,31 @@ class BookAdSerializer(serializers.ModelSerializer):
         return BookAd.objects.create(
             **validated_data
         )
+
+
+class BookAdSerializer(serializers.ModelSerializer):
+    ad_type = serializers.CharField(default=BookAd.SALE)
+    author = NestedAccountSerializer(allow_null=True, required=False)
+    poster = serializers.SerializerMethodField(required=False)
+
+    class Meta:
+        model = BookAd
+        fields = [
+            'id', 'ad_type', 'title', 'description', 'author',
+            'poster', 'price'
+        ]
+        read_only_fields = ('id',)
+
+    def get_user_id(self):
+        return self.context['user_id']
+
+    def get_poster(self, obj):
+        if obj.poster is None:
+            return ""
+        f = open(obj.poster.path, 'rb')
+        image = File(f)
+        data = base64.b64encode(image.read())
+        return data
 
 
 class BookAdUpdateSerializer(serializers.ModelSerializer):

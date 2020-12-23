@@ -13,7 +13,8 @@ from book_advertisement.models import BookAd
 from book_advertisement.serializers.ad_serializers import (
     BookAdSerializer,
     BookAdUpdateSerializer,
-    BookAdListSerializer
+    BookAdListSerializer,
+    BookAdSerializerPost
 )
 from rest_framework import permissions
 
@@ -44,6 +45,8 @@ class BookAdvertiseView(ModelViewSet):
             return BookAdListSerializer
         elif self.request.method == 'PATCH':
             return BookAdUpdateSerializer
+        elif self.request.method == 'POST':
+            return BookAdSerializerPost
         return BookAdSerializer
 
     def get_serializer_context(self):
