@@ -38,15 +38,6 @@ class BookAdSerializerPost(serializers.ModelSerializer):
     def get_user_id(self):
         return self.context['user_id']
 
-    def get_poster(self, obj):
-        if obj.poster is None:
-            return None
-
-        f = open(obj.poster.path, 'rb')
-        image = File(f)
-        data = base64.b64encode(image.read())
-        return data
-
     def validate(self, attrs):
         id = self.get_user_id()
         attrs['author'] = Account.objects.get(id=id)
