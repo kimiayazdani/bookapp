@@ -134,7 +134,8 @@ class BookAdListSerializer(serializers.ModelSerializer):
             'title',
             'author__username',
             'poster',
-            'price'
+            'price',
+            'ad_type'
         )
         fields = context_fields
         read_only_fields = context_fields
