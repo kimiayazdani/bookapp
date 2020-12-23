@@ -5,7 +5,10 @@ from rest_framework import serializers
 
 from account_management.models import Account
 from book_advertisement.models import BookAd
-
+from django.core.files import File
+import base64
+import os
+from django.conf import settings
 
 class NestedAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -86,6 +89,7 @@ class BookAdListSerializer(serializers.ModelSerializer):
         this serializer used for GET request with action:list
     """
     author__username = serializers.CharField(write_only=True, required=False)
+    poster = serializers.SerializerMethodField()
 
     class Meta:
         model = BookAd
@@ -100,10 +104,18 @@ class BookAdListSerializer(serializers.ModelSerializer):
         read_only_fields = context_fields
 
     def to_representation(self, instance):
-
+        base64_poster = None
+        if instance['poster'] != '':
+            poster = os.path.join(settings.MEDIA_ROOT, instance['poster'])
+            f = open(poster, 'rb')
+            image = File(f)
+            base64_poster = base64.b64encode(image.read())
         ret = OrderedDict()
         fields = self.Meta.context_fields
         for field in fields:
             if field in self.Meta.fields:
-                ret[field] = self.context['data'][instance['id']][field]
+                if field == 'poster' and base64_poster is not None:
+                    ret[field] = base64_poster
+                else:
+                    ret[field] = self.context['data'][instance['id']][field]
         return ret
