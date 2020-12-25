@@ -6,6 +6,7 @@ from account_management.views import (
     update_account_view,
     does_account_exist_view,
     ChangePasswordView,
+    update_account_picture,
     Logout,
 )
 
@@ -16,6 +17,7 @@ urlpatterns = [
     path('change_password/', ChangePasswordView.as_view(), name="change_password"),
     path('properties/', account_properties_view, name="properties"),
     path('update/', update_account_view, name="update"),
+    path('update/avatar/', update_account_picture, name="update_picture"),
     path('login/', Login.as_view(), name="login"),
     path('register/', registration_view, name="register"),
     path('logout/', Logout.as_view(), name='logout'),

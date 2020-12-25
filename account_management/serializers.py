@@ -18,6 +18,16 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return super(RegistrationSerializer, self).create(validated_data)
 
 
+class AccountPicture(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['pk', 'avatar']
+        read_only_fields = ['pk']
+
+    def update(self, instance, validated_data):
+        return super(AccountPicture, self).update(instance, validated_data)
+
+
 class AccountPropertiesSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
 
