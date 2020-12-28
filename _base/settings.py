@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'import_export',
+    'simple_history_field_track',
     # apps
     
     'account_management',

@@ -69,6 +69,9 @@ class BookAdvertiseView(ModelViewSet):
     def get_queryset(self):
         _query = None
         if self.request.method == 'GET' and self.action == 'list':
+            _query = BookAd.objects.filter(
+                status=BookAd.APPROVED
+            )
             params = _p.clean_data(self.request.query_params, self.list_params_template)
             start = params['start']
             end = params['end']
@@ -80,7 +83,7 @@ class BookAdvertiseView(ModelViewSet):
                 raise ValidationError('start datetime should be before end datetime')
             if not validation_kinds:
                 raise ValidationError('kind should be in cat, dog or hamster ')
-            _query = BookAd.objects.filter(
+            _query = _query.filter(
                 created__gte=start, created__lte=end,
             )
             if ad_types:

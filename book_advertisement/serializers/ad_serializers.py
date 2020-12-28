@@ -55,6 +55,11 @@ class BookAdSerializerPost(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        if BookAd.objects.filter(author_id=self.get_user_id()).count() > Account.MAX_FREE_POSTS:
+            raise serializers.ValidationError(
+                {'error':
+                    'شما پست‌های رایگان خود را استفاده کرده‌اید لطفا حساب خود را شارژ کنید.'}
+            )
         return BookAd.objects.create(
             **validated_data
         )
@@ -159,3 +164,20 @@ class BookAdListSerializer(serializers.ModelSerializer):
                 else:
                     ret[field] = self.context['data'][instance['id']][field]
         return ret
+
+
+class ApproveAdd(serializers.ModelSerializer):
+    class Meta:
+        model = BookAd
+        fields = ('id', 'status')
+        read_only_fields = ('id', )
+        writable_fields = ('status', )
+
+    def update(self, instance: BookAd, validated_data):
+        with transaction.atomic():
+            for field in self.Meta.writable_fields:
+                if field in validated_data:
+                    setattr(instance, field, validated_data[field])
+            instance.save()
+            return super(ApproveAdd, self).update(instance, validated_data)
+
