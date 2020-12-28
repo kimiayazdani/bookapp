@@ -8,6 +8,7 @@ from account_management.views import (
     ChangePasswordView,
     update_account_picture,
     Logout,
+    VerifyEmail
 )
 
 app_name = 'account_management'

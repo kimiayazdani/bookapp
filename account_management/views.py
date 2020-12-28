@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import UpdateAPIView
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.generics import GenericAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .serializers import (
     RegistrationSerializer,
@@ -12,10 +13,15 @@ from .serializers import (
     AccountUpdateSerializer,
     AccountPicture
 )
+from account_management.utils import Util
 from account_management.models import Account
 from rest_framework import status
 from rest_framework.response import Response
 from django.contrib.auth import logout
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
+import jwt
+from django.conf import settings
 
 
 class Logout(APIView):
@@ -75,7 +81,6 @@ def registration_view(request):
 
     if serializer.is_valid():
         account = serializer.save()
-        account.save()
         ser = RegistrationSerializer(account)
         data = ser.data
         token = RefreshToken.for_user(user=account)
@@ -85,6 +90,11 @@ def registration_view(request):
         data['username'] = account.username
         data['refresh_token'] = str(token)
         data['access_token'] = str(token.access_token)
+        absurl = 'http://' + get_current_site(request).domain + reverse('verify-email') + "?token=" + data['access_token']
+        email_body = 'Hi ' + account.username + ' Use Link below to verify your email: \n' + absurl
+        email_data = {'body': email_body, 'subject': 'Verify your email', 'user_email': account.email}
+        account.save()
+        Util.send_email(data=email_data)
 
         return Response(data=data, status=status.HTTP_200_OK)
     else:
@@ -271,3 +281,19 @@ class ChangePasswordView(UpdateAPIView):
             return Response({"response": "successfully changed password"}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyEmail(GenericAPIView):
+    def get(self, request):
+        token = request.GET.get('token')
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY)
+            user = Account.objects.get(id=payload['user_id'])
+            if not user.is_active:
+                user.is_active = True
+                user.save()
+            return Response({'email': 'successfully activated'}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError:
+            return Response({'error': 'Activation expired'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError:
+            return Response({'error': 'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST)
