@@ -34,6 +34,7 @@ class MyAccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser, TimeModel):
+    MAX_FREE_POSTS = 5
     history = HistoricalRecords()
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
     name = models.CharField(max_length=30)

@@ -33,7 +33,7 @@ class AccountPropertiesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ['pk', 'avatar', 'email', 'is_staff', 'bio', 'phone_number', 'username', 'name',]
+        fields = ['pk', 'avatar', 'email', 'is_staff', 'bio', 'phone_number', 'username', 'name', 'is_validate']
 
     def get_avatar(self, obj):
         f = open(obj.avatar.path, 'rb')

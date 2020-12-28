@@ -15,16 +15,28 @@ class BookAd(TimeModel):
     )
     AD_KINDS = tuple(dict(AD_CHOICES).keys())
 
+    APPROVED = 'approved'
+    DISAPPROVED = 'disapproved'
+    PENDING = 'pending'
+
+    STATUS_CHOICES = (
+        (APPROVED, 'تایید شده'),
+        (DISAPPROVED, 'رد شده'),
+        (PENDING, 'در انتظار')
+    )
+    STATUS_KINDS = tuple(dict(STATUS_CHOICES).keys())
+
     poster = models.ImageField(verbose_name="تصویر", upload_to='ad_posters/', null=True, blank=True, )
     title = models.CharField(verbose_name="نام کتاب", max_length=30)
     author = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name='نویسنده')
     description = models.TextField(verbose_name="توضیحات", max_length=500)
-    ad_type = models.CharField(verbose_name="نوع درخواست", default=SALE, db_index=True, max_length=20)
+    ad_type = models.CharField(verbose_name="نوع درخواست", choices=AD_CHOICES, default=SALE, db_index=True, max_length=20)
     price = models.IntegerField(verbose_name="قیمت", default=20000)
     authorName = models.CharField(verbose_name='نام نویسنده', default='بی‌نام', max_length=30)
+    status = models.CharField(verbose_name='وضعیت', choices=STATUS_CHOICES, default=PENDING, max_length=20)
 
     def __str__(self):
-        return self.title
+        return str(self.title) + ' / ' + str(self.authorName)
 
     def get_absolute_url(self):
         return reverse('ad', kwargs={'pk': self.pk})
