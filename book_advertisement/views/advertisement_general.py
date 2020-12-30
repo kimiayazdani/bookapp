@@ -8,13 +8,16 @@ from rest_framework import status
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.generics import ListAPIView
+
 
 from book_advertisement.models import BookAd
 from book_advertisement.serializers.ad_serializers import (
     BookAdSerializer,
     BookAdUpdateSerializer,
     BookAdListSerializer,
-    BookAdSerializerPost
+    BookAdSerializerPost,
+    AdAll
 )
 from rest_framework import permissions
 
@@ -135,3 +138,17 @@ class BookAdvertiseView(ModelViewSet):
             return Response(data={'object with id:{} does not exist'.format(pk)}, status=status.HTTP_404_NOT_FOUND)
         self.perform_destroy(post)
         return Response(data={'object deleted successfully'}, status=status.HTTP_200_OK)
+
+
+class GetAllUserPosts(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    serializer_class = AdAll
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance = None  # type: Optional[BookAd]
+
+    def get_queryset(self):
+        print(self.request.user)
+        print('herre')
+        return BookAd.objects.filter(author=self.request.user)

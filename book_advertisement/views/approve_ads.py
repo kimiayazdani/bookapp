@@ -1,10 +1,12 @@
 import logging
 from typing import Optional
 
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from book_advertisement.models import BookAd
-from rest_framework.generics import UpdateAPIView
 from rest_framework import permissions
+from rest_framework.generics import UpdateAPIView, ListAPIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from book_advertisement.models import BookAd
+from book_advertisement.serializers import AdAll
 from book_advertisement.serializers import ApproveAdd
 
 logger = logging.getLogger(__name__)
@@ -16,8 +18,8 @@ class IsStaff(permissions.BasePermission):
 
 
 class BookAdvertiseApproveView(UpdateAPIView):
-    authentication_classes = (JWTAuthentication, )
-    permission_classes = (IsStaff, )
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsStaff,)
     serializer_class = ApproveAdd
     model = BookAd
 
@@ -35,3 +37,16 @@ class BookAdvertiseApproveView(UpdateAPIView):
 
     def get_serializer_class(self):
         return ApproveAdd
+
+
+class GetAllPosts(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsStaff,)
+    serializer_class = AdAll
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance = None  # type: Optional[BookAd]
+
+    def get_queryset(self):
+        return BookAd.objects.filter(status=BookAd.PENDING)

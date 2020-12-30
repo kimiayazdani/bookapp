@@ -1,14 +1,14 @@
+import base64
+import os
 from collections import OrderedDict
 
+from django.conf import settings
+from django.core.files import File
 from django.db import transaction
 from rest_framework import serializers
 
 from account_management.models import Account
 from book_advertisement.models import BookAd
-from django.core.files import File
-import base64
-import os
-from django.conf import settings
 
 
 class NestedAccountSerializer(serializers.ModelSerializer):
@@ -58,7 +58,7 @@ class BookAdSerializerPost(serializers.ModelSerializer):
         if BookAd.objects.filter(author_id=self.get_user_id()).count() > Account.MAX_FREE_POSTS:
             raise serializers.ValidationError(
                 {'error':
-                    'شما پست‌های رایگان خود را استفاده کرده‌اید لطفا حساب خود را شارژ کنید.'}
+                     'شما پست‌های رایگان خود را استفاده کرده‌اید لطفا حساب خود را شارژ کنید.'}
             )
         return BookAd.objects.create(
             **validated_data
@@ -166,12 +166,40 @@ class BookAdListSerializer(serializers.ModelSerializer):
         return ret
 
 
+class AdAll(serializers.ModelSerializer):
+    poster = serializers.SerializerMethodField()
+    author__username = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = BookAd
+        fields = ('id',
+                  'status',
+                  'title',
+                  'author__username',
+                  'price',
+                  'ad_type',
+                  'authorName',
+                  'poster'
+                  )
+        read_only_fields = ('id',)
+        writable_fields = ('status',)
+
+    def get_poster(self, obj):
+        if obj.poster is None or obj.poster == '':
+            return None
+
+        f = open(obj.poster.path, 'rb')
+        image = File(f)
+        data = base64.b64encode(image.read())
+        return data
+
+
 class ApproveAdd(serializers.ModelSerializer):
     class Meta:
         model = BookAd
         fields = ('id', 'status')
-        read_only_fields = ('id', )
-        writable_fields = ('status', )
+        read_only_fields = ('id',)
+        writable_fields = ('status',)
 
     def update(self, instance: BookAd, validated_data):
         with transaction.atomic():
@@ -180,4 +208,3 @@ class ApproveAdd(serializers.ModelSerializer):
                     setattr(instance, field, validated_data[field])
             instance.save()
             return super(ApproveAdd, self).update(instance, validated_data)
-
