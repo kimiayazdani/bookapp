@@ -185,7 +185,11 @@ def update_account_picture(request):
         serializer = AccountPicture(account, data=request.data, partial=True)
         data = {}
         if serializer.is_valid():
-            serializer.save()
+            account = serializer.save()
+            file = request.FILES['avatar']
+            file._name = '/media/' + file._name
+            account.avatar = file
+            account.save()
             data['response'] = 'Account update success'
             return Response(data=data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
