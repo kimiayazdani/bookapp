@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     # apps
     
     'account_management',
-    'book_advertisement'
+    'book_advertisement',
+    'chat_management'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True

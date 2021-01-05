@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls'), name='rest_framework'),
     path('api/v1/book-advertise/', include('book_advertisement.urls_v1')),
     path('api/v1/account/', include('account_management.urls_v1')),
+    path('api/v1/chat/', include('chat_management.urls')),
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('verify-email/', VerifyEmail.as_view(), name='verify-email')
