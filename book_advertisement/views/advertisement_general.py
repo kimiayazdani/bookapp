@@ -98,7 +98,6 @@ class BookAdvertiseView(ModelViewSet):
             _query = _query.values(
                 'id', 'ad_type', 'title', 'price', 'description', 'author__username', 'poster', 'authorName'
             )
-
         elif self.request.method == 'PATCH':
             _query = BookAd.objects.all()
         _query = self.slice_queryset(_query)

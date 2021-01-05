@@ -172,7 +172,6 @@ def account_properties_view(request):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-
 @api_view(['PATCH', ])
 @permission_classes((IsAuthenticated,))
 @authentication_classes((JWTAuthentication,))
