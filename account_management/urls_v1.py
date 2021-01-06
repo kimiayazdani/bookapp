@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf.urls import url
+
 from account_management.views import (
     registration_view,
     Login,
@@ -8,7 +10,7 @@ from account_management.views import (
     ChangePasswordView,
     update_account_picture,
     Logout,
-    VerifyEmail
+    AccountPublicView
 )
 
 app_name = 'account_management'
@@ -22,4 +24,5 @@ urlpatterns = [
     path('login/', Login.as_view(), name="login"),
     path('register/', registration_view, name="register"),
     path('logout/', Logout.as_view(), name='logout'),
+    url(r'^show/(?P<username>[0-9a-zA-Z]+)/?$', AccountPublicView.as_view(), name='show_account')
 ]

@@ -63,3 +63,16 @@ class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
     confirm_new_password = serializers.CharField(required=True)
+#
+# class AccountPublicSerializer(serializers.ModelSerializer):
+#     avatar = serializers.SerializerMethodField()
+#
+#     class Meta:
+#         model = Account
+#         fields = ['pk', 'avatar', 'email', 'is_staff', 'bio', 'phone_number', 'username', 'name', 'is_active']
+#
+#     def get_avatar(self, obj):
+#         f = open(obj.avatar.path, 'rb')
+#         image = File(f)
+#         data = base64.b64encode(image.read())
+#         return data
