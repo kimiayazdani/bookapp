@@ -4,12 +4,12 @@ from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from django_plus.api import UrlParam as _p
+from rest_framework import permissions
 from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.generics import ListAPIView
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from book_advertisement.models import BookAd
 from book_advertisement.serializers.ad_serializers import (
@@ -19,7 +19,6 @@ from book_advertisement.serializers.ad_serializers import (
     BookAdSerializerPost,
     AdAll
 )
-from rest_framework import permissions
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +147,12 @@ class GetAllUserPosts(ListAPIView):
         self.instance = None  # type: Optional[BookAd]
 
     def get_queryset(self):
-        print(self.request.user)
-        print('herre')
         return BookAd.objects.filter(author=self.request.user)
+
+
+class GetPublicUserPosts(ListAPIView):
+    authentication_classes = ()
+    serializer_class = AdAll
+
+    def get_queryset(self):
+        return BookAd.objects.filter(author__username=self.kwargs.get('username'), status=BookAd.APPROVED)

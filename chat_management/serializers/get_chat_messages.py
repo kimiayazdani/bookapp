@@ -13,3 +13,12 @@ class MessageSerializer(serializers.ModelSerializer):
             'text',
             'created'
         )
+
+    def to_representation(self, instance):
+        data = {
+            'sender': instance.sender.username,
+            'receiver': instance.receiver.username,
+            'text': instance.text,
+            'created': instance.created
+        }
+        return data

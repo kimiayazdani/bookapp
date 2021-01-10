@@ -1,6 +1,8 @@
 import logging
 from typing import Optional
 
+from django.db.models import Q
+
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
@@ -24,4 +26,7 @@ class MessageView(ListAPIView):
 
     def get_queryset(self):
         receiver_username = self.kwargs.get('username')
-        return Message.objects.filter(sender=self.request.user, receiver__username=receiver_username)
+        return Message.objects.filter(
+            Q(sender=self.request.user, receiver__username=receiver_username) |
+            Q(sender__username=receiver_username, receiver=self.request.user)
+        ).order_by("-created")
