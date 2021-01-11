@@ -1,7 +1,7 @@
 import logging
 import os
 import base64
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from typing import Optional
 
 from django.conf import settings
@@ -10,6 +10,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from operator import getitem
 
 from chat_management.models import Message
 
@@ -39,6 +40,7 @@ class ListMessageView(GenericAPIView):
         )
         for data_query in first_query:
             poster = os.path.join(settings.MEDIA_ROOT, data_query['receiver__avatar'])
+            print(data_query['receiver__username'])
             f = open(poster, 'rb')
             image = File(f)
             base64_poster = base64.b64encode(image.read())
@@ -70,4 +72,6 @@ class ListMessageView(GenericAPIView):
                 'created': data_query['created'],
                 'avatar': base64_poster
             }
-        return data
+        res = OrderedDict(sorted(data.items(),
+                                 key=lambda x: getitem(x[1], 'created'), reverse=True))
+        return res
