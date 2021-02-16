@@ -6,3 +6,5 @@ from .register_view import registration_view
 from .self_account_properties import account_properties_view
 from .update_account import update_account_view, update_account_picture
 from .verify_email_view import VerifyEmail
+from .rating_view import RatingView
+from .post_rating_view import PostRatingView

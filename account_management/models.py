@@ -1,6 +1,8 @@
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 from simple_history.models import HistoricalRecords
+
 from _helpers.db import TimeModel
 
 
@@ -48,7 +50,6 @@ class Account(AbstractBaseUser, TimeModel):
     phone_number = models.CharField(max_length=11, verbose_name='شماره تماس ')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-
     objects = MyAccountManager()
 
     def __str__(self):
@@ -65,3 +66,18 @@ class Account(AbstractBaseUser, TimeModel):
     class Meta:
         verbose_name = 'اکانت'
         verbose_name_plural = 'اکانت‌ها'
+
+
+class Rating(TimeModel):
+    scorer = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='send_scores',
+                               verbose_name='امتیاز دهنده')
+    scored = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='received_scores',
+                               verbose_name='امتیاز گیرنده')
+    rate = models.IntegerField(default=3, verbose_name='امتیاز', validators=[
+        MaxValueValidator(5),
+        MinValueValidator(1)
+    ])
+
+    class Meta:
+        verbose_name = 'امتیاز'
+        verbose_name_plural = 'امتیازها'

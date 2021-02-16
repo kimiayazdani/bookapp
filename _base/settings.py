@@ -22,7 +22,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '!xrqevjx$^=lj6lj-x!w)zc6_tte(jxpt68$59lox00+@_$+0%'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -187,3 +186,13 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'nimafathinimafathi@gmail.com'
 EMAIL_HOST_PASSWORD = 'Nimafathi1378f'
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import sys
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+os.environ['DJANGO_SETTINGS_MODULE'] =  "_base.settings"
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "_base.settings")
+import django
+django.setup()

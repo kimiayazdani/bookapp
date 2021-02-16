@@ -39,7 +39,9 @@ class BookAdvertiseView(ModelViewSet):
         _p('end', _p.datetime, default=datetime.now()),
         _p('ad_type', _p.list(separator=',', item_cleaner=_p.string)),
         _p('min_price', _p.int),
-        _p('max_price', _p.int)
+        _p('max_price', _p.int),
+        _p('authorName', _p.string),
+        _p('title', _p.string)
     ]
 
     def get_serializer_class(self):
@@ -80,6 +82,8 @@ class BookAdvertiseView(ModelViewSet):
             ad_types = params['ad_type']
             min_price = params['min_price']
             max_price = params['max_price']
+            author_name = params['authorName']
+            title = params['title']
             validation_kinds = self.validate_kinds(ad_types)
             if start > end:
                 raise ValidationError('start datetime should be before end datetime')
@@ -94,6 +98,10 @@ class BookAdvertiseView(ModelViewSet):
                 _query = _query.filter(price__lte=max_price)
             if min_price:
                 _query = _query.filter(price__gte=min_price)
+            if title:
+                _query = _query.filter(title__icontains=title)
+            if author_name:
+                _query = _query.filter(authorName__icontains=author_name)
             _query = _query.values(
                 'id', 'ad_type', 'title', 'price', 'description', 'author__username', 'poster', 'authorName'
             )

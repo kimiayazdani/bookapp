@@ -10,7 +10,9 @@ from account_management.views import (
     ChangePasswordView,
     update_account_picture,
     Logout,
-    AccountPublicView
+    AccountPublicView,
+    RatingView,
+    PostRatingView
 )
 
 app_name = 'account_management'
@@ -24,5 +26,8 @@ urlpatterns = [
     path('login/', Login.as_view(), name="login"),
     path('register/', registration_view, name="register"),
     path('logout/', Logout.as_view(), name='logout'),
-    url(r'^show/(?P<username>[0-9a-zA-Z]+)/?$', AccountPublicView.as_view(), name='show_account')
+    url(r'^show/(?P<username>[0-9a-zA-Z]+)/?$', AccountPublicView.as_view(), name='show_account'),
+    url(r'^(?P<username>[0-9a-zA-Z]+)/get/?$', RatingView.as_view(), name='get_rating'),
+    url(r'^(?P<username>[0-9a-zA-Z]+)/post/?$', PostRatingView.as_view(), name='post_rating'),
+
 ]
