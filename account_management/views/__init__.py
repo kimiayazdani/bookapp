@@ -8,3 +8,4 @@ from .update_account import update_account_view, update_account_picture
 from .verify_email_view import VerifyEmail
 from .rating_view import RatingView
 from .post_rating_view import PostRatingView
+from .rating_logged_in_view import LoggedInRatingView

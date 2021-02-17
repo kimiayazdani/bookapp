@@ -22,7 +22,11 @@ class RatingView(GenericAPIView):
         data = self._get_objects()
         sum_rating = data.aggregate(Sum('rate'))
         count = data.count()
-        return Response(data={'rating': sum_rating['rate__sum'] / count})
+        if sum_rating['rate__sum'] is not None:
+            average_sum = round(sum_rating['rate__sum'] / count, 2)
+        else:
+            average_sum = 0
+        return Response(data={'rating': average_sum, 'number_rating': count})
 
     def _get_objects(self):
         scored_username = self.kwargs.get('username')
